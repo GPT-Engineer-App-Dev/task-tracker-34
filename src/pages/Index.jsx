@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Container, VStack, HStack, Input, Button, Text, Box, Checkbox, IconButton } from "@chakra-ui/react";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaEdit, FaSave } from "react-icons/fa";
 
 const Index = () => {
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
+
+  const [editIndex, setEditIndex] = useState(null);
+  const [editTask, setEditTask] = useState("");
 
   const addTask = () => {
     if (task.trim() !== "") {
@@ -23,6 +26,18 @@ const Index = () => {
     setTasks(newTasks);
   };
 
+  const startEditing = (index) => {
+    setEditIndex(index);
+    setEditTask(tasks[index].text);
+  };
+
+  const saveTask = (index) => {
+    const newTasks = tasks.map((t, i) => (i === index ? { ...t, text: editTask } : t));
+    setTasks(newTasks);
+    setEditIndex(null);
+    setEditTask("");
+  };
+
   return (
     <Container centerContent maxW="container.md" height="100vh" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
       <VStack spacing={4} width="100%">
@@ -38,15 +53,40 @@ const Index = () => {
         <VStack width="100%" spacing={3}>
           {tasks.map((t, index) => (
             <HStack key={index} width="100%" justifyContent="space-between">
-              <Checkbox isChecked={t.completed} onChange={() => toggleTaskCompletion(index)}>
-                <Text as={t.completed ? "s" : ""}>{t.text}</Text>
-              </Checkbox>
-              <IconButton
-                aria-label="Delete task"
-                icon={<FaTrash />}
-                colorScheme="red"
-                onClick={() => deleteTask(index)}
-              />
+              {editIndex === index ? (
+                <HStack width="100%">
+                  <Input
+                    value={editTask}
+                    onChange={(e) => setEditTask(e.target.value)}
+                  />
+                  <IconButton
+                    aria-label="Save task"
+                    icon={<FaSave />}
+                    colorScheme="green"
+                    onClick={() => saveTask(index)}
+                  />
+                </HStack>
+              ) : (
+                <>
+                  <Checkbox isChecked={t.completed} onChange={() => toggleTaskCompletion(index)}>
+                    <Text as={t.completed ? "s" : ""}>{t.text}</Text>
+                  </Checkbox>
+                  <HStack>
+                    <IconButton
+                      aria-label="Edit task"
+                      icon={<FaEdit />}
+                      colorScheme="yellow"
+                      onClick={() => startEditing(index)}
+                    />
+                    <IconButton
+                      aria-label="Delete task"
+                      icon={<FaTrash />}
+                      colorScheme="red"
+                      onClick={() => deleteTask(index)}
+                    />
+                  </HStack>
+                </>
+              )}
             </HStack>
           ))}
         </VStack>
